@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sonofields Ear Training</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+        body {
+            background-color: #0a0a0a;
+            color: #e5e5e5;
+            font-family: 'JetBrains Mono', monospace;
+            min-height: 100vh; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        /* Compact Range Sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            height: 12px; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 12px;
+            width: 12px;
+            border-radius: 50%;
+            background: #ff9e0b;
+            cursor: pointer;
+            margin-top: -5px;
+            border: 1px solid #0a0a0a;
+            position: relative;
+            z-index: 10;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 2px;
+            cursor: pointer;
+            background: #333;
+            border-radius: 2px;
+        }
+        
+        /* Number inputs */
+        input[type=number] {
+            background: #161616;
+            border: 1px solid #333;
+            color: #ff9e0b;
+            padding: 0 4px;
+            border-radius: 2px;
+            width: 50px;
+            font-size: 0.7rem;
+            height: 20px;
+        }
+        input[type=number]:focus { outline: none; border-color: #ff9e0b; }
+
+        /* Selects */
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ff9e0b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.2rem center;
+            background-repeat: no-repeat;
+            background-size: 1em 1em;
+            padding-right: 1.5rem;
+            -webkit-appearance: none;
+            appearance: none;
+            font-size: 0.75rem;
+            height: 24px;
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        /* Dual Slider container */
+        .range-slider-container {
+            position: relative;
+            width: 100%;
+            height: 20px;
+            text-align: center;
+        }
+        .range-slider-container input[type=range] {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            pointer-events: none;
+        }
+        .range-slider-container input[type=range]::-webkit-slider-thumb { pointer-events: all; }
+        .range-slider-container input[type=range]::-moz-range-thumb { pointer-events: all; }
+
+        /* Square Keys - Small & Simple */
+        .degree-sq {
+            width: 36px;
+            height: 36px;
+            border: 1px solid #333;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: #1a1a1a;
+            margin: 2px;
+        }
+        .degree-sq:hover { background: #252525; }
+        .degree-sq.active {
+            background-color: #ff9e0b;
+            color: black;
+            border-color: #ff9e0b;
+            box-shadow: 0 0 6px rgba(255, 158, 11, 0.3);
+        }
+        .degree-sq .main-lbl { font-weight: bold; font-size: 0.7rem; line-height: 1; }
+        .degree-sq .sub-lbl { font-size: 0.4rem; opacity: 0.6; text-transform: uppercase; margin-top: 1px; }
+
+        .control-group {
+            background: #121212;
+            border: 1px solid #262626;
+            padding: 0.75rem;
+            border-radius: 4px;
+        }
+        
+        label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; }
+    </style>
+</head>
+<body>
+
+    <div class="w-full max-w-2xl flex flex-col gap-3">
+        
+        <!-- Compact Header -->
+        <header class="flex justify-between items-baseline border-b border-zinc-800 pb-2">
+            <div>
+                <h1 class="text-xl font-bold text-white tracking-tighter leading-none">EAR<span class="text-amber-500">TRAINER</span></h1>
+            </div>
+            <div id="status-display" class="text-amber-500 text-xs font-bold opacity-0 transition-opacity">● LIVE</div>
+        </header>
+
+        <!-- Main Controls Grid -->
+        <div class="grid grid-cols-2 gap-3">
+            
+            <!-- Sound Settings -->
+            <div class="control-group flex flex-col gap-3">
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block mb-1">Root Key</label>
+                        <select id="rootKey" class="w-full bg-zinc-900 border border-zinc-700 text-amber-500 focus:outline-none rounded-sm">
+                            <option value="C">C</option>
+                            <option value="C#">C#</option>
+                            <option value="D">D</option>
+                            <option value="D#">D#</option>
+                            <option value="E">E</option>
+                            <option value="F">F</option>
+                            <option value="F#">F#</option>
+                            <option value="G">G</option>
+                            <option value="G#">G#</option>
+                            <option value="A">A</option>
+                            <option value="A#">A#</option>
+                            <option value="B">B</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block mb-1">Instrument</label>
+                        <select id="instrument" class="w-full bg-zinc-900 border border-zinc-700 text-amber-500 focus:outline-none rounded-sm">
+                            <option value="piano" selected>E-Piano</option>
+                            <option value="acoustic">Classic</option>
+                            <option value="pad">Pad</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block mb-1 flex justify-between"><span>Drone Vol</span> <span id="dv-val" class="text-white">80%</span></label>
+                        <!-- Default 80% -->
+                        <input type="range" id="droneVol" min="0" max="1" step="0.01" value="0.8" oninput="document.getElementById('dv-val').innerText = Math.round(this.value*100)+'%'; updateDroneVolume(this.value)">
+                    </div>
+                    <div>
+                        <label class="block mb-1 flex justify-between"><span>Note Vol</span> <span id="nv-val" class="text-white">80%</span></label>
+                        <!-- Default 80% -->
+                        <input type="range" id="noteVol" min="0" max="1" step="0.01" value="0.8" oninput="document.getElementById('nv-val').innerText = Math.round(this.value*100)+'%'">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timing Settings -->
+            <div class="control-group flex flex-col justify-between">
+                <div class="mb-2">
+                    <div class="flex justify-between mb-1 items-center">
+                        <label>Duration (s)</label>
+                        <input type="number" id="noteDurInput" value="2.0" step="0.1" min="0.1">
+                    </div>
+                    <input type="range" id="noteDuration" min="0.1" max="8" step="0.1" value="2.0">
+                </div>
+
+                <div class="mb-2">
+                    <div class="flex justify-between mb-1 items-center">
+                        <label>Gap (s)</label>
+                        <input type="number" id="noteGapInput" value="1.0" step="0.1">
+                    </div>
+                    <input type="range" id="noteGap" min="-2" max="8" step="0.1" value="1.0">
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label>Octaves</label>
+                        <span class="text-[10px] text-amber-500 font-bold"><span id="octaveMinDisplay">4</span>-<span id="octaveMaxDisplay">4</span></span>
+                    </div>
+                    <div class="range-slider-container">
+                        <div class="absolute top-1/2 left-0 w-full h-0.5 bg-zinc-800 -translate-y-1/2 rounded"></div>
+                        <div id="slider-track" class="absolute top-1/2 h-0.5 bg-amber-700/80 -translate-y-1/2 z-0"></div>
+                        <!-- Default Octave 4-4 -->
+                        <input type="range" id="octaveMin" min="1" max="7" step="1" value="4">
+                        <input type="range" id="octaveMax" min="1" max="7" step="1" value="4">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Degrees Grid -->
+        <div class="control-group flex flex-col justify-center">
+            <div class="flex justify-between items-center mb-3">
+                <label class="text-zinc-500 font-bold">Active Degrees</label>
+                <div class="space-x-2">
+                    <button onclick="selectAllDegrees()" class="text-[9px] uppercase hover:text-white text-zinc-500">All</button>
+                    <button onclick="selectDiatonic()" class="text-[9px] uppercase hover:text-white text-zinc-500">Major</button>
+                    <button onclick="selectNone()" class="text-[9px] uppercase hover:text-white text-zinc-500">None</button>
+                </div>
+            </div>
+
+            <div class="flex flex-col items-center gap-2 w-full select-none">
+                <!-- Top Row (Chromatic) -->
+                <div id="chromaticLayer" class="flex justify-center gap-1 w-full flex-wrap"></div>
+
+                <!-- Bottom Row (Diatonic) -->
+                <div id="diatonicLayer" class="flex justify-center gap-1 w-full flex-wrap"></div>
+            </div>
+        </div>
+
+        <!-- Main Action & Display -->
+        <div class="flex flex-col items-center gap-3 mt-2">
+            <button id="toggleBtn" class="w-full md:w-64 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm uppercase tracking-widest transition-colors rounded-sm shadow-[0_0_15px_rgba(255,158,11,0.15)]">
+                Start Training
+            </button>
+            
+            <div id="currentNoteDisplay" class="flex flex-col items-center opacity-0 transition-opacity duration-500 h-12 justify-center">
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="text-zinc-600 text-[10px] uppercase tracking-widest">Current Note</span>
+                    <button onclick="toggleBlindMode()" id="blindToggle" class="text-[9px] bg-zinc-900 px-2 py-0.5 rounded text-zinc-500 hover:text-white border border-zinc-800">Hide</button>
+                </div>
+                <div class="relative">
+                    <div id="blindOverlay" class="hidden absolute inset-0 backdrop-blur-md bg-black/80 z-10 rounded"></div>
+                    <span id="noteName" class="text-2xl font-bold text-white font-mono leading-none">--</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        /* --- CONSTANTS --- */
+        const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+        
+        const SOLFEGE_MAP = {
+            0: { num: "1", sol: "Do" },
+            1: { num: "b2", sol: "Ra" },
+            2: { num: "2", sol: "Re" },
+            3: { num: "b3", sol: "Me" },
+            4: { num: "3", sol: "Mi" },
+            5: { num: "4", sol: "Fa" },
+            6: { num: "b5", sol: "Se" },
+            7: { num: "5", sol: "Sol" },
+            8: { num: "b6", sol: "Le" },
+            9: { num: "6", sol: "La" },
+            10: { num: "b7", sol: "Te" },
+            11: { num: "7", sol: "Ti" }
+        };
+
+        const DEGREES = [
+            { semi: 0, type: 'dia', label: '1', sub: 'Do' },
+            { semi: 1, type: 'chr', label: 'b2', sub: 'Ra', pos: 0.5 },
+            { semi: 2, type: 'dia', label: '2', sub: 'Re' },
+            { semi: 3, type: 'chr', label: 'b3', sub: 'Me', pos: 1.5 },
+            { semi: 4, type: 'dia', label: '3', sub: 'Mi' },
+            { semi: 5, type: 'dia', label: '4', sub: 'Fa' },
+            { semi: 6, type: 'chr', label: 'b5', sub: 'Se', pos: 3.5 },
+            { semi: 7, type: 'dia', label: '5', sub: 'Sol' },
+            { semi: 8, type: 'chr', label: 'b6', sub: 'Le', pos: 4.5 },
+            { semi: 9, type: 'dia', label: '6', sub: 'La' },
+            { semi: 10, type: 'chr', label: 'b7', sub: 'Te', pos: 5.5 },
+            { semi: 11, type: 'dia', label: '7', sub: 'Ti' },
+        ];
+
+        /* --- STATE --- */
+        let audioCtx;
+        let masterGain;
+        let droneMasterGain = null; 
+        let droneNodes = [];
+        let isPlaying = false;
+        let nextNoteTime = 0;
+        let schedulerTimer = null;
+        let activeDegrees = new Set([0, 2, 4, 5, 7, 9, 11]); 
+        let blindMode = false;
+
+        /* --- DOM --- */
+        const btnToggle = document.getElementById('toggleBtn');
+        const diatonicLayer = document.getElementById('diatonicLayer');
+        const chromaticLayer = document.getElementById('chromaticLayer');
+        const noteVolSlider = document.getElementById('noteVol');
+        
+        function initUI() {
+            renderGrid();
+            bindInputs();
+            updateSliderTrack();
+        }
+
+        function renderGrid() {
+            diatonicLayer.innerHTML = '';
+            chromaticLayer.innerHTML = '';
+            // Chromatic (Top)
+            DEGREES.filter(d => d.type === 'chr').forEach(d => {
+                const btn = createBtn(d);
+                btn.className = `degree-sq ${activeDegrees.has(d.semi) ? 'active' : ''}`;
+                chromaticLayer.appendChild(btn);
+            });
+            // Diatonic (Bottom)
+            DEGREES.filter(d => d.type === 'dia').forEach(d => {
+                const btn = createBtn(d);
+                btn.className = `degree-sq ${activeDegrees.has(d.semi) ? 'active' : ''}`;
+                diatonicLayer.appendChild(btn);
+            });
+        }
+
+        function createBtn(data) {
+            const btn = document.createElement('div');
+            btn.innerHTML = `<span class="main-lbl">${data.label}</span><span class="sub-lbl">${data.sub}</span>`;
+            btn.dataset.semi = data.semi;
+            btn.onclick = () => {
+                if (activeDegrees.has(data.semi)) {
+                    activeDegrees.delete(data.semi);
+                    btn.classList.remove('active');
+                } else {
+                    activeDegrees.add(data.semi);
+                    btn.classList.add('active');
+                }
+            };
+            return btn;
+        }
+
+        function toggleBlindMode() {
+            blindMode = !blindMode;
+            const ov = document.getElementById('blindOverlay');
+            const btn = document.getElementById('blindToggle');
+            if (blindMode) {
+                ov.classList.remove('hidden');
+                btn.classList.add('text-amber-500', 'border-amber-500');
+                btn.innerText = "Show";
+            } else {
+                ov.classList.add('hidden');
+                btn.classList.remove('text-amber-500', 'border-amber-500');
+                btn.innerText = "Hide";
+            }
+        }
+
+        function bindInputs() {
+            const durS = document.getElementById('noteDuration');
+            const durI = document.getElementById('noteDurInput');
+            const gapS = document.getElementById('noteGap');
+            const gapI = document.getElementById('noteGapInput');
+            
+            durS.oninput = (e) => durI.value = e.target.value;
+            durI.onchange = (e) => { durS.value = e.target.value; };
+            gapS.oninput = (e) => gapI.value = e.target.value;
+            gapI.onchange = (e) => { gapS.value = e.target.value; };
+
+            document.getElementById('octaveMin').oninput = validateOctave;
+            document.getElementById('octaveMax').oninput = validateOctave;
+        }
+
+        function validateOctave(e) {
+            const minEl = document.getElementById('octaveMin');
+            const maxEl = document.getElementById('octaveMax');
+            let min = parseInt(minEl.value);
+            let max = parseInt(maxEl.value);
+            
+            if (e.target.id === 'octaveMin' && min > max) minEl.value = max;
+            if (e.target.id === 'octaveMax' && max < min) maxEl.value = min;
+            
+            document.getElementById('octaveMinDisplay').innerText = minEl.value;
+            document.getElementById('octaveMaxDisplay').innerText = maxEl.value;
+            updateSliderTrack();
+        }
+
+        function updateSliderTrack() {
+            const minEl = document.getElementById('octaveMin');
+            const maxEl = document.getElementById('octaveMax');
+            const min = parseInt(minEl.value);
+            const max = parseInt(maxEl.value);
+            const range = parseInt(minEl.max) - parseInt(minEl.min);
+            const left = ((min - 1) / range) * 100;
+            const width = range === 0 ? 0 : ((max - min) / range) * 100;
+            
+            const track = document.getElementById('slider-track');
+            // If range is 0 (same octave), just show a dot or small line
+            if(range === 0) {
+                // Calculate relative to min/max bounds of input (1-7)
+                const totalRange = 6; 
+                const percent = ((min - 1) / totalRange) * 100;
+                track.style.left = percent + "%";
+                track.style.width = "10px";
+            } else {
+                track.style.left = left + "%";
+                track.style.width = width + "%";
+            }
+        }
+        
+        function selectAllDegrees() { activeDegrees = new Set(DEGREES.map(d=>d.semi)); updateGridState(); }
+        function selectDiatonic() { activeDegrees = new Set([0,2,4,5,7,9,11]); updateGridState(); }
+        function selectNone() { activeDegrees = new Set([]); updateGridState(); }
+        
+        function updateGridState() {
+            document.querySelectorAll('.degree-sq').forEach(el => {
+                const s = parseInt(el.dataset.semi);
+                if (activeDegrees.has(s)) el.classList.add('active'); else el.classList.remove('active');
+            });
+        }
+
+        /* --- AUDIO ENGINE --- */
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioCtx.createGain();
+                masterGain.connect(audioCtx.destination);
+            }
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function getFreq(noteIndex, octave) {
+            const midi = (octave + 1) * 12 + noteIndex;
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        // IMPROVED EQ CURVE: Boosts bass, aggressively cuts highs to fix "piercing" sound
+        function getFreqGainScale(freq) {
+            // Boost lows below 250Hz (Bass is weak on small speakers)
+            if (freq < 250) return 1.3;
+            
+            // Aggressive damping for high frequencies
+            // The human ear finds 2000Hz+ much louder than 200Hz at same amplitude
+            if (freq > 700) {
+                // Inverse relationship: higher freq = lower vol
+                // At 1000Hz returns ~0.4
+                // At 2000Hz returns ~0.2
+                return Math.max(0.15, 400 / freq); 
+            }
+            return 1.0;
+        }
+
+        /* --- INSTRUMENTS --- */
+        function playInstrumentNote(freq, start, dur, type) {
+            const vol = parseFloat(noteVolSlider.value);
+            // Apply EQ scale
+            const eqScale = getFreqGainScale(freq);
+            const safeVol = vol * eqScale;
+
+            if (type === 'acoustic') playAcousticPiano(freq, start, dur, safeVol);
+            else if (type === 'piano') playEPiano(freq, start, dur, safeVol);
+            else playPadNote(freq, start, dur, safeVol);
+        }
+
+        function playEPiano(freq, t, dur, maxVol) {
+            const carrier = audioCtx.createOscillator();
+            const modulator = audioCtx.createOscillator();
+            const modGain = audioCtx.createGain();
+            const mainGain = audioCtx.createGain();
+
+            // PHYSICS FIX: High notes on piano/epiano are almost pure sines
+            // Using a complex wave on high pitch causes aliasing and pain.
+            // If freq > 700, force pure sine on both layers
+            const isHigh = freq > 700;
+
+            carrier.type = 'sine';
+            carrier.frequency.value = freq;
+            
+            // Modulator adds the "tine" sound. On high notes, tines are barely audible.
+            modulator.type = isHigh ? 'sine' : 'sine'; 
+            modulator.frequency.value = freq * 2; // 2nd harmonic
+
+            modulator.connect(modGain);
+            modGain.connect(carrier.frequency);
+            carrier.connect(mainGain);
+            mainGain.connect(masterGain);
+
+            mainGain.gain.setValueAtTime(0, t);
+            mainGain.gain.linearRampToValueAtTime(maxVol, t + 0.02);
+            mainGain.gain.exponentialRampToValueAtTime(0.01, t + dur);
+
+            // Reduce FM depth significantly on high notes to remove "grit"
+            const fmDepth = isHigh ? freq * 0.2 : freq * 1.5;
+
+            modGain.gain.setValueAtTime(0, t);
+            modGain.gain.linearRampToValueAtTime(fmDepth, t + 0.02);
+            modGain.gain.exponentialRampToValueAtTime(1, t + dur * 0.6);
+
+            carrier.start(t); modulator.start(t);
+            carrier.stop(t + dur + 0.1); modulator.stop(t + dur + 0.1);
+        }
+
+        function playAcousticPiano(freq, t, dur, maxVol) {
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            const isHigh = freq > 700;
+
+            // Body
+            osc1.type = isHigh ? 'sine' : 'triangle'; 
+            // Hammer/Bright
+            // Sawtooth is painful at high pitch. Switch to sine for upper register.
+            osc2.type = isHigh ? 'sine' : 'sawtooth'; 
+
+            osc1.frequency.value = freq;
+            osc2.frequency.value = freq;
+            osc2.detune.value = isHigh ? 1 : 3; // Less detune on highs
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            // Key tracking: Filter opens less for high notes relative to ratio
+            filter.frequency.setValueAtTime(0, t);
+            
+            // High notes: Cutoff barely above fundamental (remove buzz)
+            // Low notes: Cutoff high (allow harmonics)
+            const peakFilter = isHigh ? freq * 1.5 : 4000;
+            
+            filter.frequency.linearRampToValueAtTime(peakFilter, t + 0.01); 
+            filter.frequency.exponentialRampToValueAtTime(isHigh ? freq : 500, t + 0.5); 
+
+            osc1.connect(gain);
+            osc2.connect(filter);
+            filter.connect(gain);
+            gain.connect(masterGain);
+
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(maxVol, t + 0.015); 
+            gain.gain.exponentialRampToValueAtTime(0.01, t + dur);
+
+            osc1.start(t); osc2.start(t);
+            osc1.stop(t + dur + 0.1); osc2.stop(t + dur + 0.1);
+        }
+
+        function playPadNote(freq, t, dur, maxVol) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            // Pad also needs safety switch
+            osc.type = freq > 700 ? 'triangle' : 'sawtooth';
+            osc.frequency.value = freq;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = freq > 700 ? freq * 1.5 : 800;
+            filter.Q.value = 1;
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(masterGain);
+
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(maxVol * 0.6, t + 0.5);
+            gain.gain.setValueAtTime(maxVol * 0.6, t + dur - 0.5);
+            gain.gain.linearRampToValueAtTime(0, t + dur);
+
+            osc.start(t);
+            osc.stop(t + dur + 0.1);
+        }
+
+        /* --- DRONE --- */
+        function startDrone() {
+            const rootName = document.getElementById('rootKey').value;
+            const rootIdx = NOTE_NAMES.indexOf(rootName.replace(/\d/, ''));
+            const freq = getFreq(rootIdx, 3);
+            
+            droneMasterGain = audioCtx.createGain();
+            droneMasterGain.connect(masterGain);
+            updateDroneVolume(document.getElementById('droneVol').value); 
+
+            const makeOsc = (d, type, pan) => {
+                const o = audioCtx.createOscillator();
+                o.type = type;
+                o.frequency.value = freq;
+                o.detune.value = d;
+                const p = audioCtx.createStereoPanner();
+                p.pan.value = pan;
+                const g = audioCtx.createGain();
+                // INCREASED BASE GAIN (was 0.2)
+                g.gain.value = 0.5; 
+                o.connect(g); g.connect(p);
+                return {o, g, p};
+            };
+
+            const layers = [
+                makeOsc(0, 'sawtooth', 0),
+                makeOsc(-8, 'sawtooth', -0.3),
+                makeOsc(8, 'sawtooth', 0.3),
+                makeOsc(0, 'sine', 0) 
+            ];
+            layers[3].o.frequency.value = freq / 2; 
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = 350;
+            
+            layers.forEach(l => l.p.connect(filter));
+            filter.connect(droneMasterGain);
+
+            const t = audioCtx.currentTime;
+            layers.forEach(l => {
+                l.o.start(t);
+                droneNodes.push(l.o);
+            });
+            droneNodes.push(droneMasterGain); 
+        }
+        
+        function updateDroneVolume(val) {
+            if(droneMasterGain) {
+                droneMasterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+                droneMasterGain.gain.linearRampToValueAtTime(parseFloat(val), audioCtx.currentTime + 0.1);
+            }
+        }
+
+        function stopDrone() {
+            const t = audioCtx.currentTime;
+            if(droneMasterGain) {
+                 droneMasterGain.gain.exponentialRampToValueAtTime(0.001, t + 1);
+            }
+            setTimeout(() => {
+                droneNodes.forEach(n => n.stop ? n.stop() : n.disconnect());
+                droneNodes = [];
+                droneMasterGain = null;
+            }, 1100);
+        }
+
+        /* --- LOGIC --- */
+        function performCadenceAndStart() {
+            const t = audioCtx.currentTime;
+            const rootName = document.getElementById('rootKey').value;
+            const rootIdx = NOTE_NAMES.indexOf(rootName.replace(/\d/, ''));
+            const instr = document.getElementById('instrument').value;
+
+            let f1 = getFreq(rootIdx, 4);
+            let f5 = getFreq((rootIdx + 7) % 12, 4);
+            
+            playInstrumentNote(f1, t, 1.5, instr);
+            playInstrumentNote(f5, t + 1.5, 1.5, instr);
+            playInstrumentNote(f1, t + 3.0, 1.5, instr);
+
+            nextNoteTime = t + 4.5; 
+            runScheduler();
+        }
+
+        function runScheduler() {
+            if(isPlaying) {
+                while(nextNoteTime < audioCtx.currentTime + 0.1) {
+                    scheduleNote();
+                }
+                schedulerTimer = setTimeout(runScheduler, 25);
+            }
+        }
+
+        function scheduleNote() {
+            const degrees = Array.from(activeDegrees);
+            if (degrees.length === 0) { nextNoteTime += 1; return; }
+            
+            const semitone = degrees[Math.floor(Math.random() * degrees.length)];
+            const minOct = parseInt(document.getElementById('octaveMin').value);
+            const maxOct = parseInt(document.getElementById('octaveMax').value);
+            const octave = Math.floor(Math.random() * (maxOct - minOct + 1)) + minOct;
+
+            const rootName = document.getElementById('rootKey').value;
+            const rootIdx = NOTE_NAMES.indexOf(rootName.replace(/\d/, ''));
+            
+            let noteIdx = rootIdx + semitone;
+            let actualOctave = octave;
+            if (noteIdx > 11) { noteIdx %= 12; actualOctave++; }
+            
+            const freq = getFreq(noteIdx, actualOctave);
+            const dur = parseFloat(document.getElementById('noteDurInput').value);
+            const gap = parseFloat(document.getElementById('noteGapInput').value);
+            const instr = document.getElementById('instrument').value;
+
+            playInstrumentNote(freq, nextNoteTime, dur, instr);
+
+            const visualTime = (nextNoteTime - audioCtx.currentTime) * 1000;
+            const solfegeInfo = SOLFEGE_MAP[semitone];
+
+            setTimeout(() => {
+                if(!isPlaying) return;
+                document.getElementById('currentNoteDisplay').style.opacity = 1;
+                document.getElementById('noteName').innerText = `${solfegeInfo.num} (${solfegeInfo.sol})`;
+            }, visualTime);
+
+            nextNoteTime += (dur + gap);
+        }
+
+        /* --- MAIN TOGGLE --- */
+        btnToggle.addEventListener('click', () => {
+            if (isPlaying) {
+                isPlaying = false;
+                clearTimeout(schedulerTimer);
+                stopDrone();
+                btnToggle.innerText = "Start Training";
+                btnToggle.classList.replace('bg-red-500', 'bg-amber-500');
+                btnToggle.classList.replace('hover:bg-red-400', 'hover:bg-amber-400');
+                document.getElementById('status-display').style.opacity = 0;
+                document.getElementById('currentNoteDisplay').style.opacity = 0;
+            } else {
+                if(activeDegrees.size === 0) return alert("Select at least one degree!");
+                initAudio();
+                isPlaying = true;
+                startDrone();
+                performCadenceAndStart();
+                btnToggle.innerText = "Stop Session";
+                btnToggle.classList.replace('bg-amber-500', 'bg-red-500');
+                btnToggle.classList.replace('hover:bg-amber-400', 'hover:bg-red-400');
+                document.getElementById('status-display').style.opacity = 1;
+            }
+        });
+
+        initUI();
+    </script>
+</body>
+</html>
