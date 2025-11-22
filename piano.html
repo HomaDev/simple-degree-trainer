@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>88-Key Piano (Realistic Decay)</title>
+    <style>
+        body {
+            background: #222;
+            color: white;
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        h1 { margin-bottom: 5px; }
+        p { color: #aaa; margin-bottom: 15px; font-size: 0.9rem; text-align: center;}
+
+        .piano-wrapper {
+            width: 95vw;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background: #111;
+            padding: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            text-align: center;
+        }
+
+        .piano {
+            position: relative;
+            height: 250px;
+            display: inline-block;
+            margin: 0 20px;
+            white-space: nowrap;
+        }
+
+        .key.white {
+            width: 40px;
+            height: 250px;
+            background: linear-gradient(to bottom, #fff 0%, #eee 100%);
+            border: 1px solid #ccc;
+            border-radius: 0 0 5px 5px;
+            display: inline-block;
+            position: relative;
+            z-index: 1;
+            cursor: pointer;
+            box-sizing: border-box;
+            vertical-align: top;
+            transition: background 0.1s;
+        }
+
+        .key.white:active, .key.white.active {
+            background: linear-gradient(to bottom, #fff 0%, #ccc 100%);
+            height: 248px;
+            transform: translateY(2px);
+        }
+
+        .key.black {
+            width: 24px;
+            height: 150px;
+            background: linear-gradient(to bottom, #333 0%, #000 100%);
+            border: 1px solid #000;
+            border-radius: 0 0 3px 3px;
+            position: absolute;
+            z-index: 2;
+            cursor: pointer;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            transition: background 0.1s;
+        }
+
+        .key.black:active, .key.black.active {
+            background: linear-gradient(to bottom, #222 0%, #000 100%);
+        }
+
+        .label {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            color: #555;
+            font-size: 10px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Realistic Decay Piano</h1>
+    <p>High notes are now quieter and fade out quickly (short sustain),<br>just like real piano strings.</p>
+
+    <div class="piano-wrapper">
+        <div id="piano-container" class="piano"></div>
+    </div>
+
+    <script>
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const ctx = new AudioContext();
+        const activeOscillators = {};
+
+        function playSound(index, frequency) {
+            // If already playing, cut it off to restart (re-strike)
+            if (activeOscillators[index]) stopSound(index);
+
+            const osc = ctx.createOscillator();
+            const gainNode = ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.value = frequency;
+
+            // --- PHYSICS SIMULATION ---
+            
+            // 1. VOLUME CALCULATION (Drastic cut for highs)
+            let peakVolume = 1.0;
+            if (frequency < 100) {
+                peakVolume = 0.7;  // Loud bass
+            } else if (frequency < 400) {
+                peakVolume = 0.4;  // Moderate mids
+            } else if (frequency < 800) {
+                peakVolume = 0.2;  // Quiet upper mids
+            } else {
+                peakVolume = 0.06; // Extremely quiet highs (to prevent piercing)
+            }
+
+            // 2. DECAY CALCULATION (The "Plink" vs "Boom")
+            // High notes (short strings) lose energy very fast.
+            // Low notes (long strings) hold energy for seconds.
+            let decayTime = 2.0; 
+            if (frequency > 800) { 
+                decayTime = 0.4; // High notes die instantly
+            } else if (frequency > 400) {
+                decayTime = 1.0;
+            } else {
+                decayTime = 3.0; // Bass notes ring out
+            }
+
+            osc.connect(gainNode);
+            gainNode.connect(ctx.destination);
+
+            // --- ENVELOPE (ADSR) ---
+            const now = ctx.currentTime;
+            
+            // Attack: Hit peak volume instantly (0.01s)
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(peakVolume, now + 0.01);
+            
+            // Decay: Immediately start fading out naturally, even if key is held
+            // We fade to near-silence (0.001) over the duration of 'decayTime'
+            gainNode.gain.exponentialRampToValueAtTime(0.001, now + decayTime);
+
+            osc.start();
+            
+            // We store the gainNode so we can stop it early if the user lifts the key
+            activeOscillators[index] = { osc, gainNode };
+            
+            // Auto cleanup if the note rings out completely
+            osc.stop(now + decayTime);
+        }
+
+        function stopSound(index) {
+            if (!activeOscillators[index]) return;
+            const { osc, gainNode } = activeOscillators[index];
+            
+            // If the user lifts the key, dampen the string immediately
+            // (Like the felt damper hitting the string)
+            try {
+                gainNode.gain.cancelScheduledValues(ctx.currentTime);
+                // Fast release (0.1s) to silence
+                gainNode.gain.setTargetAtTime(0, ctx.currentTime, 0.05);
+            } catch(e) {}
+
+            // Clean up object
+            delete activeOscillators[index];
+        }
+
+        // --- Piano Generation Logic (Same as before) ---
+        const pianoContainer = document.getElementById('piano-container');
+        const noteNames = ['A', 'A#', 'B', 'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#'];
+        let whiteKeyCount = 0;
+        const keysDOM = {}; 
+
+        const keyMap = {
+            'z': 40, 's': 41, 'x': 42, 'd': 43, 'c': 44, 'v': 45,
+            'g': 46, 'b': 47, 'h': 48, 'n': 49, 'j': 50, 'm': 51,
+            'q': 52, '2': 53, 'w': 54, '3': 55, 'e': 56, 'r': 57,
+            '5': 58, 't': 59, '6': 60, 'y': 61, '7': 62, 'u': 63
+        };
+
+        for (let i = 1; i <= 88; i++) {
+            const frequency = 440 * Math.pow(2, (i - 49) / 12);
+            const noteInOctave = (i - 1) % 12;
+            const noteName = noteNames[noteInOctave];
+            const isBlack = noteName.includes('#');
+            
+            const keyElement = document.createElement('div');
+            keyElement.classList.add('key', isBlack ? 'black' : 'white');
+            keyElement.dataset.note = i;
+            
+            if (noteName === 'C' && !isBlack) {
+               const octave = Math.floor((i + 8) / 12);
+               keyElement.innerHTML = `<div class="label">C${octave}</div>`;
+               if (octave === 4) keyElement.style.background = "linear-gradient(to bottom, #fff 0%, #d0d0ff 100%)";
+            }
+
+            if (isBlack) {
+                const leftPos = (whiteKeyCount * 40) - (24 / 2);
+                keyElement.style.left = `${leftPos}px`;
+            } else {
+                whiteKeyCount++;
+            }
+
+            const startNote = () => {
+                playSound(i, frequency);
+                keyElement.classList.add('active');
+            };
+            const endNote = () => {
+                stopSound(i);
+                keyElement.classList.remove('active');
+            };
+
+            keyElement.addEventListener('mousedown', startNote);
+            keyElement.addEventListener('mouseup', endNote);
+            keyElement.addEventListener('mouseleave', endNote);
+
+            keysDOM[i] = keyElement;
+            pianoContainer.appendChild(keyElement);
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+            const keyIndex = keyMap[e.key.toLowerCase()];
+            if (keyIndex) {
+                const freq = 440 * Math.pow(2, (keyIndex - 49) / 12);
+                playSound(keyIndex, freq);
+                if(keysDOM[keyIndex]) keysDOM[keyIndex].classList.add('active');
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const keyIndex = keyMap[e.key.toLowerCase()];
+            if (keyIndex) {
+                stopSound(keyIndex);
+                if(keysDOM[keyIndex]) keysDOM[keyIndex].classList.remove('active');
+            }
+        });
+
+        window.onload = () => {
+            if (keysDOM[52]) keysDOM[52].scrollIntoView({ block: 'center', inline: 'center' });
+        }
+    </script>
+</body>
+</html>

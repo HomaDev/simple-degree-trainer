@@ -18,9 +18,9 @@
             align-items: center;
             justify-content: center;
             padding: 1rem;
+            user-select: none;
         }
 
-        /* Compact Range Sliders */
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
@@ -47,7 +47,6 @@
             border-radius: 2px;
         }
         
-        /* Number inputs */
         input[type=number] {
             background: #161616;
             border: 1px solid #333;
@@ -60,7 +59,6 @@
         }
         input[type=number]:focus { outline: none; border-color: #ff9e0b; }
 
-        /* Selects */
         select {
             background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ff9e0b' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
             background-position: right 0.2rem center;
@@ -75,7 +73,6 @@
             padding-bottom: 0;
         }
 
-        /* Dual Slider container */
         .range-slider-container {
             position: relative;
             width: 100%;
@@ -91,7 +88,6 @@
         .range-slider-container input[type=range]::-webkit-slider-thumb { pointer-events: all; }
         .range-slider-container input[type=range]::-moz-range-thumb { pointer-events: all; }
 
-        /* Square Keys */
         .degree-sq {
             width: 36px;
             height: 36px;
@@ -124,11 +120,6 @@
         }
         
         label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: #888; }
-
-        /* Loading Bar */
-        #loader-container {
-            transition: opacity 0.5s;
-        }
     </style>
 </head>
 <body>
@@ -137,20 +128,13 @@
         
         <header class="flex justify-between items-baseline border-b border-zinc-800 pb-2">
             <div>
-                <h1 class="text-xl font-bold text-white tracking-tighter leading-none">REAL<span class="text-amber-500">PIANO</span></h1>
+                <h1 class="text-xl font-bold text-white tracking-tighter leading-none">SIMPLE<span class="text-amber-500">DEGREES</span>TRAINER</h1>
             </div>
             <div id="status-display" class="text-amber-500 text-xs font-bold opacity-0 transition-opacity">● LIVE</div>
         </header>
 
-        <div id="loader-container" class="w-full bg-zinc-900 rounded-full h-1.5 mb-2 relative overflow-hidden hidden">
-            <div id="loader-bar" class="bg-amber-500 h-1.5 absolute left-0 top-0 w-0 transition-all duration-300"></div>
-        </div>
-        <div id="loader-text" class="text-center text-[10px] text-zinc-500 h-4 hidden">Downloading Piano Samples...</div>
-
         <div class="grid grid-cols-2 gap-3">
-            
             <div class="control-group flex flex-col gap-3">
-                
                 <div class="grid grid-cols-2 gap-2">
                     <div>
                         <label class="block mb-1">Root Key</label>
@@ -170,24 +154,23 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block mb-1">Reverb</label>
-                        <select id="reverbAmt" class="w-full bg-zinc-900 border border-zinc-700 text-amber-500 focus:outline-none rounded-sm">
-                            <option value="0">Dry</option>
-                            <option value="0.2">Small Room</option>
-                            <option value="0.5" selected>Concert Hall</option>
-                            <option value="0.8">Cathedral</option>
+                        <label class="block mb-1">Instrument</label>
+                        <select id="instrument" class="w-full bg-zinc-900 border border-zinc-700 text-amber-500 focus:outline-none rounded-sm">
+                            <option value="piano" selected>E-Piano</option>
+                            <option value="acoustic">Classic</option>
+                            <option value="pad">Pad</option>
                         </select>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block mb-1 flex justify-between"><span>Drone Vol</span> <span id="dv-val" class="text-white">30%</span></label>
-                        <input type="range" id="droneVol" min="0" max="1" step="0.01" value="0.3" oninput="document.getElementById('dv-val').innerText = Math.round(this.value*100)+'%'; updateDroneVolume(this.value)">
+                        <label class="block mb-1 flex justify-between"><span>Drone Vol</span> <span id="dv-val" class="text-white">80%</span></label>
+                        <input type="range" id="droneVol" min="0" max="1" step="0.01" value="0.8" oninput="document.getElementById('dv-val').innerText = Math.round(this.value*100)+'%'; updateDroneVolume(this.value)">
                     </div>
                     <div>
-                        <label class="block mb-1 flex justify-between"><span>Note Vol</span> <span id="nv-val" class="text-white">90%</span></label>
-                        <input type="range" id="noteVol" min="0" max="1" step="0.01" value="0.9" oninput="document.getElementById('nv-val').innerText = Math.round(this.value*100)+'%'">
+                        <label class="block mb-1 flex justify-between"><span>Note Vol</span> <span id="nv-val" class="text-white">80%</span></label>
+                        <input type="range" id="noteVol" min="0" max="1" step="0.01" value="0.8" oninput="document.getElementById('nv-val').innerText = Math.round(this.value*100)+'%'">
                     </div>
                 </div>
             </div>
@@ -196,9 +179,9 @@
                 <div class="mb-2">
                     <div class="flex justify-between mb-1 items-center">
                         <label>Duration (s)</label>
-                        <input type="number" id="noteDurInput" value="2.5" step="0.1" min="0.1">
+                        <input type="number" id="noteDurInput" value="2.0" step="0.1" min="0.1">
                     </div>
-                    <input type="range" id="noteDuration" min="0.1" max="8" step="0.1" value="2.5">
+                    <input type="range" id="noteDuration" min="0.1" max="8" step="0.1" value="2.0">
                 </div>
 
                 <div class="mb-2">
@@ -217,8 +200,8 @@
                     <div class="range-slider-container">
                         <div class="absolute top-1/2 left-0 w-full h-0.5 bg-zinc-800 -translate-y-1/2 rounded"></div>
                         <div id="slider-track" class="absolute top-1/2 h-0.5 bg-amber-700/80 -translate-y-1/2 z-0"></div>
-                        <input type="range" id="octaveMin" min="1" max="6" step="1" value="3">
-                        <input type="range" id="octaveMax" min="1" max="6" step="1" value="5">
+                        <input type="range" id="octaveMin" min="1" max="7" step="1" value="3">
+                        <input type="range" id="octaveMax" min="1" max="7" step="1" value="5">
                     </div>
                 </div>
             </div>
@@ -241,8 +224,8 @@
         </div>
 
         <div class="flex flex-col items-center gap-3 mt-2">
-            <button id="toggleBtn" class="w-full md:w-64 py-3 bg-zinc-800 text-zinc-500 font-bold text-sm uppercase tracking-widest transition-colors rounded-sm shadow-lg cursor-not-allowed">
-                Initialize Audio
+            <button id="toggleBtn" class="w-full md:w-64 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm uppercase tracking-widest transition-colors rounded-sm shadow-[0_0_15px_rgba(255,158,11,0.15)]">
+                Start Training
             </button>
             
             <div id="currentNoteDisplay" class="flex flex-col items-center opacity-0 transition-opacity duration-500 h-12 justify-center">
@@ -260,60 +243,29 @@
     </div>
 
     <script>
-        /* --- CONSTANTS --- */
+        /* --- CONSTANTS & DATA --- */
         const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-        
-        const SOLFEGE_MAP = {
-            0: { num: "1", sol: "Do" }, 1: { num: "b2", sol: "Ra" }, 2: { num: "2", sol: "Re" },
-            3: { num: "b3", sol: "Me" }, 4: { num: "3", sol: "Mi" }, 5: { num: "4", sol: "Fa" },
-            6: { num: "b5", sol: "Se" }, 7: { num: "5", sol: "Sol" }, 8: { num: "b6", sol: "Le" },
-            9: { num: "6", sol: "La" }, 10: { num: "b7", sol: "Te" }, 11: { num: "7", sol: "Ti" }
-        };
+        const SOLFEGE_MAP = { 0: {num:"1",sol:"Do"}, 1: {num:"b2",sol:"Ra"}, 2: {num:"2",sol:"Re"}, 3: {num:"b3",sol:"Me"}, 4: {num:"3",sol:"Mi"}, 5: {num:"4",sol:"Fa"}, 6: {num:"b5",sol:"Se"}, 7: {num:"5",sol:"Sol"}, 8: {num:"b6",sol:"Le"}, 9: {num:"6",sol:"La"}, 10: {num:"b7",sol:"Te"}, 11: {num:"7",sol:"Ti"} };
+        const DEGREES = [ {semi:0,type:'dia',label:'1',sub:'Do'}, {semi:1,type:'chr',label:'b2',sub:'Ra'}, {semi:2,type:'dia',label:'2',sub:'Re'}, {semi:3,type:'chr',label:'b3',sub:'Me'}, {semi:4,type:'dia',label:'3',sub:'Mi'}, {semi:5,type:'dia',label:'4',sub:'Fa'}, {semi:6,type:'chr',label:'b5',sub:'Se'}, {semi:7,type:'dia',label:'5',sub:'Sol'}, {semi:8,type:'chr',label:'b6',sub:'Le'}, {semi:9,type:'dia',label:'6',sub:'La'}, {semi:10,type:'chr',label:'b7',sub:'Te'}, {semi:11,type:'dia',label:'7',sub:'Ti'} ];
 
-        const DEGREES = [
-            { semi: 0, type: 'dia', label: '1', sub: 'Do' },
-            { semi: 1, type: 'chr', label: 'b2', sub: 'Ra' }, { semi: 2, type: 'dia', label: '2', sub: 'Re' },
-            { semi: 3, type: 'chr', label: 'b3', sub: 'Me' }, { semi: 4, type: 'dia', label: '3', sub: 'Mi' },
-            { semi: 5, type: 'dia', label: '4', sub: 'Fa' }, { semi: 6, type: 'chr', label: 'b5', sub: 'Se' },
-            { semi: 7, type: 'dia', label: '5', sub: 'Sol' }, { semi: 8, type: 'chr', label: 'b6', sub: 'Le' },
-            { semi: 9, type: 'dia', label: '6', sub: 'La' }, { semi: 10, type: 'chr', label: 'b7', sub: 'Te' },
-            { semi: 11, type: 'dia', label: '7', sub: 'Ti' },
-        ];
-
-        // Using Salamander Grand Piano samples (lighter selection to save bandwidth)
-        const SAMPLES_URL_PREFIX = "https://gleitz.github.io/midi-js-soundfonts/SalamanderGrandPiano/";
-        // We load every 3rd or 4th note and pitch-shift to fill gaps
-        const SAMPLE_MAP = {
-            "A0": "A0.mp3", "C1": "C1.mp3", "D#1": "D#1.mp3", "F#1": "F#1.mp3", "A1": "A1.mp3",
-            "C2": "C2.mp3", "D#2": "D#2.mp3", "F#2": "F#2.mp3", "A2": "A2.mp3",
-            "C3": "C3.mp3", "D#3": "D#3.mp3", "F#3": "F#3.mp3", "A3": "A3.mp3",
-            "C4": "C4.mp3", "D#4": "D#4.mp3", "F#4": "F#4.mp3", "A4": "A4.mp3",
-            "C5": "C5.mp3", "D#5": "D#5.mp3", "F#5": "F#5.mp3", "A5": "A5.mp3",
-            "C6": "C6.mp3", "D#6": "D#6.mp3", "F#6": "F#6.mp3", "A6": "A6.mp3",
-            "C7": "C7.mp3", "D#7": "D#7.mp3", "F#7": "F#7.mp3", "A7": "A7.mp3",
-            "C8": "C8.mp3"
-        };
-
-        /* --- STATE --- */
+        /* --- APP STATE --- */
         let audioCtx;
         let masterGain;
-        let reverbNode;
         let compressor;
-        let pianoBuffers = {};
-        let droneGain = null; 
+        let droneMasterGain = null;
         let droneNodes = [];
-        
         let isPlaying = false;
-        let samplesLoaded = false;
-        
         let nextNoteTime = 0;
         let schedulerTimer = null;
         let activeDegrees = new Set([0, 2, 4, 5, 7, 9, 11]); 
         let blindMode = false;
 
-        /* --- UI LOGIC --- */
+        /* --- INITIALIZATION --- */
         const btnToggle = document.getElementById('toggleBtn');
-        
+        const diatonicLayer = document.getElementById('diatonicLayer');
+        const chromaticLayer = document.getElementById('chromaticLayer');
+        const noteVolSlider = document.getElementById('noteVol');
+
         function initUI() {
             renderGrid();
             bindInputs();
@@ -321,75 +273,25 @@
         }
 
         function renderGrid() {
-            const dia = document.getElementById('diatonicLayer');
-            const chr = document.getElementById('chromaticLayer');
-            dia.innerHTML = ''; chr.innerHTML = '';
-            
+            diatonicLayer.innerHTML = ''; chromaticLayer.innerHTML = '';
             DEGREES.forEach(d => {
                 const btn = document.createElement('div');
                 btn.innerHTML = `<span class="main-lbl">${d.label}</span><span class="sub-lbl">${d.sub}</span>`;
-                btn.className = `degree-sq ${activeDegrees.has(d.semi) ? 'active' : ''}`;
+                btn.dataset.semi = d.semi;
+                btn.className = `degree-sq`;
                 btn.onclick = () => {
-                    if (activeDegrees.has(d.semi)) {
-                        activeDegrees.delete(d.semi);
-                        btn.classList.remove('active');
-                    } else {
-                        activeDegrees.add(d.semi);
-                        btn.classList.add('active');
-                    }
+                    if(activeDegrees.has(d.semi)) activeDegrees.delete(d.semi); else activeDegrees.add(d.semi);
+                    updateGridState();
                 };
-                (d.type === 'dia' ? dia : chr).appendChild(btn);
+                (d.type === 'dia' ? diatonicLayer : chromaticLayer).appendChild(btn);
             });
+            updateGridState();
         }
-
-        function bindInputs() {
-            const durS = document.getElementById('noteDuration');
-            const durI = document.getElementById('noteDurInput');
-            const gapS = document.getElementById('noteGap');
-            const gapI = document.getElementById('noteGapInput');
-            
-            durS.oninput = (e) => durI.value = e.target.value;
-            durI.onchange = (e) => { durS.value = e.target.value; };
-            gapS.oninput = (e) => gapI.value = e.target.value;
-            gapI.onchange = (e) => { gapS.value = e.target.value; };
-            
-            document.getElementById('octaveMin').oninput = validateOctave;
-            document.getElementById('octaveMax').oninput = validateOctave;
-            
-            document.getElementById('reverbAmt').onchange = (e) => {
-                 if(reverbNode) {
-                    // Just regenerate reverb on change for simplicity
-                    createReverbImpulse(parseFloat(e.target.value));
-                 }
-            };
-        }
-
-        function validateOctave(e) {
-            const minEl = document.getElementById('octaveMin');
-            const maxEl = document.getElementById('octaveMax');
-            let min = parseInt(minEl.value);
-            let max = parseInt(maxEl.value);
-            
-            if (e.target.id === 'octaveMin' && min > max) minEl.value = max;
-            if (e.target.id === 'octaveMax' && max < min) maxEl.value = min;
-            
-            document.getElementById('octaveMinDisplay').innerText = minEl.value;
-            document.getElementById('octaveMaxDisplay').innerText = maxEl.value;
-            updateSliderTrack();
-        }
-
-        function updateSliderTrack() {
-            const minEl = document.getElementById('octaveMin');
-            const maxEl = document.getElementById('octaveMax');
-            const min = parseInt(minEl.value);
-            const max = parseInt(maxEl.value);
-            const range = parseInt(minEl.max) - parseInt(minEl.min);
-            const left = ((min - 1) / range) * 100;
-            const width = range === 0 ? 5 : ((max - min) / range) * 100; // Min width 5%
-            
-            const track = document.getElementById('slider-track');
-            track.style.left = left + "%";
-            track.style.width = width + "%";
+        
+        function updateGridState() {
+            document.querySelectorAll('.degree-sq').forEach(el => {
+                if(activeDegrees.has(parseInt(el.dataset.semi))) el.classList.add('active'); else el.classList.remove('active');
+            });
         }
 
         function toggleBlindMode() {
@@ -397,257 +299,232 @@
             const ov = document.getElementById('blindOverlay');
             const btn = document.getElementById('blindToggle');
             if (blindMode) {
-                ov.classList.remove('hidden');
-                btn.classList.add('text-amber-500', 'border-amber-500');
-                btn.innerText = "Show";
+                ov.classList.remove('hidden'); btn.classList.add('text-amber-500', 'border-amber-500'); btn.innerText = "Show";
             } else {
-                ov.classList.add('hidden');
-                btn.classList.remove('text-amber-500', 'border-amber-500');
-                btn.innerText = "Hide";
+                ov.classList.add('hidden'); btn.classList.remove('text-amber-500', 'border-amber-500'); btn.innerText = "Hide";
             }
         }
 
-        function selectAllDegrees() { activeDegrees = new Set(DEGREES.map(d=>d.semi)); renderGrid(); }
-        function selectDiatonic() { activeDegrees = new Set([0,2,4,5,7,9,11]); renderGrid(); }
-        function selectNone() { activeDegrees = new Set([]); renderGrid(); }
+        function bindInputs() {
+            const bind = (sliderId, inputId) => {
+                const s = document.getElementById(sliderId); const i = document.getElementById(inputId);
+                s.oninput = (e) => i.value = e.target.value; i.onchange = (e) => s.value = e.target.value;
+            };
+            bind('noteDuration', 'noteDurInput'); bind('noteGap', 'noteGapInput');
+            document.getElementById('octaveMin').oninput = validateOctave;
+            document.getElementById('octaveMax').oninput = validateOctave;
+        }
 
+        function validateOctave(e) {
+            const minEl = document.getElementById('octaveMin'); const maxEl = document.getElementById('octaveMax');
+            if (e.target.id === 'octaveMin' && parseInt(minEl.value) > parseInt(maxEl.value)) minEl.value = maxEl.value;
+            if (e.target.id === 'octaveMax' && parseInt(maxEl.value) < parseInt(minEl.value)) maxEl.value = minEl.value;
+            document.getElementById('octaveMinDisplay').innerText = minEl.value;
+            document.getElementById('octaveMaxDisplay').innerText = maxEl.value;
+            updateSliderTrack();
+        }
 
-        /* --- AUDIO ENGINE: SAMPLER --- */
+        function updateSliderTrack() {
+            const minEl = document.getElementById('octaveMin'); const maxEl = document.getElementById('octaveMax');
+            const range = parseInt(minEl.max) - parseInt(minEl.min);
+            const left = ((parseInt(minEl.value) - 1) / range) * 100;
+            const width = range === 0 ? 5 : ((parseInt(maxEl.value) - parseInt(minEl.value)) / range) * 100;
+            const track = document.getElementById('slider-track');
+            track.style.left = left + "%"; track.style.width = width + "%";
+        }
         
-        async function initAudioAndLoad() {
-            if (audioCtx) return; // Already init
-            
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            
-            // Master Chain: Reverb -> Compressor -> Master
-            masterGain = audioCtx.createGain();
-            compressor = audioCtx.createDynamicsCompressor();
-            reverbNode = audioCtx.createConvolver();
+        function selectAllDegrees() { activeDegrees = new Set(DEGREES.map(d=>d.semi)); updateGridState(); }
+        function selectDiatonic() { activeDegrees = new Set([0,2,4,5,7,9,11]); updateGridState(); }
+        function selectNone() { activeDegrees = new Set([]); updateGridState(); }
 
-            // Setup Compressor (Safety & Glue)
-            compressor.threshold.value = -20;
-            compressor.ratio.value = 12;
-            compressor.attack.value = 0.003;
-            compressor.release.value = 0.25;
-            
-            // Generate initial Reverb
-            createReverbImpulse(0.5); // Default Concert Hall
+        /* --- AUDIO ENGINE --- */
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // LIMITER (Compressor) setup
+                compressor = audioCtx.createDynamicsCompressor();
+                compressor.threshold.value = -5; 
+                compressor.knee.value = 10;
+                compressor.ratio.value = 20; // Hard limiter
+                compressor.attack.value = 0.001;
+                compressor.release.value = 0.1;
 
-            // Route: Sources -> Reverb -> Master -> Compressor -> Out
-            // Dry signal will also go straight to Master
-            reverbNode.connect(masterGain);
-            masterGain.connect(compressor);
-            compressor.connect(audioCtx.destination);
-
-            // Load Samples
-            document.getElementById('loader-container').classList.remove('hidden');
-            document.getElementById('loader-text').classList.remove('hidden');
-            btnToggle.innerText = "Loading...";
-            
-            await loadSamples();
-            
-            samplesLoaded = true;
-            document.getElementById('loader-container').classList.add('hidden');
-            document.getElementById('loader-text').classList.add('hidden');
-            
-            btnToggle.classList.remove('bg-zinc-800', 'text-zinc-500', 'cursor-not-allowed');
-            btnToggle.classList.add('bg-amber-500', 'text-black', 'hover:bg-amber-400');
-            btnToggle.innerText = "Start Training";
-        }
-
-        async function loadSamples() {
-            const promises = [];
-            const notes = Object.keys(SAMPLE_MAP);
-            const total = notes.length;
-            let loaded = 0;
-
-            for (const note of notes) {
-                const url = SAMPLES_URL_PREFIX + SAMPLE_MAP[note];
-                promises.push(
-                    fetch(url)
-                        .then(response => response.arrayBuffer())
-                        .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
-                        .then(audioBuffer => {
-                            pianoBuffers[note] = audioBuffer;
-                            loaded++;
-                            document.getElementById('loader-bar').style.width = (loaded / total * 100) + '%';
-                        })
-                        .catch(e => console.error("Failed to load " + note, e))
-                );
+                masterGain = audioCtx.createGain();
+                
+                // Chain: Sources -> MasterGain -> Compressor -> Out
+                masterGain.connect(compressor);
+                compressor.connect(audioCtx.destination);
             }
-            await Promise.all(promises);
+            if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        // Create a synthetic Impulse Response for Reverb (saves loading another file)
-        function createReverbImpulse(duration) {
-            if (duration === 0) {
-                // disconnect reverb logic handled in play function via mix
-                return;
-            }
-            const rate = audioCtx.sampleRate;
-            const length = rate * duration;
-            const impulse = audioCtx.createBuffer(2, length, rate);
-            const left = impulse.getChannelData(0);
-            const right = impulse.getChannelData(1);
-
-            for (let i = 0; i < length; i++) {
-                // Exponential decay noise
-                const n = i < length * 0.02 ? 0 : Math.random() * 2 - 1; // Pre-delay silence
-                const decay = Math.pow(1 - i / length, 3);
-                left[i] = n * decay;
-                right[i] = n * decay;
-            }
-            reverbNode.buffer = impulse;
+        function getFreq(noteIndex, octave) {
+            const midi = (octave + 1) * 12 + noteIndex;
+            return 440 * Math.pow(2, (midi - 69) / 12);
         }
 
-        function noteToMidi(noteName) {
-            // e.g. "C4" -> 60
-            const notes = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-            const octave = parseInt(noteName.slice(-1));
-            const key = noteName.slice(0, -1);
-            return notes.indexOf(key) + (octave + 1) * 12;
-        }
-
-        function getNearestSample(midi) {
-            // Find closest loaded sample
-            let minDist = Infinity;
-            let bestNote = null;
+        // --- UPDATED CURVES (Highs Boosted, Bass Maintained) ---
+        function getVolumeCurve(freq) {
+            // Bass Boost
+            if (freq < 100) return 3.0; 
+            if (freq < 200) return 2.2;
+            if (freq < 400) return 1.5;
             
-            for (const noteName of Object.keys(pianoBuffers)) {
-                const smidi = noteToMidi(noteName);
-                const dist = Math.abs(midi - smidi);
-                if (dist < minDist) {
-                    minDist = dist;
-                    bestNote = noteName;
-                }
-            }
-            return { buffer: pianoBuffers[bestNote], centerMidi: noteToMidi(bestNote) };
+            // Mids
+            if (freq < 800) return 1.0;
+            
+            // Highs - Increased from 0.15 to 0.35/0.6 to make them audible
+            if (freq < 1500) return 0.6; 
+            return 0.35; 
         }
 
-        function playSample(midi, time, duration, velocity = 1.0) {
-            const match = getNearestSample(midi);
-            if (!match.buffer) return;
+        function playInstrumentNote(freq, start, dur, type) {
+            const vol = parseFloat(noteVolSlider.value);
+            // Global Scale: 0.6 multiplier keeps mix under 1.0 when added to drone
+            const balancedVol = vol * 0.6 * getVolumeCurve(freq); 
 
-            const source = audioCtx.createBufferSource();
-            source.buffer = match.buffer;
-
-            // Pitch shift
-            const semitones = midi - match.centerMidi;
-            const detune = semitones * 100; 
-            source.detune.value = detune;
-
-            // Velocity/Volume Gain
-            const gainNode = audioCtx.createGain();
-            
-            // Mix Dry/Wet
-            const reverbAmt = parseFloat(document.getElementById('reverbAmt').value);
-            const dryGain = audioCtx.createGain();
-            const wetGain = audioCtx.createGain();
-
-            dryGain.gain.value = (1 - reverbAmt * 0.4); // Keep dry distinct
-            wetGain.gain.value = reverbAmt;
-
-            source.connect(gainNode);
-            gainNode.connect(dryGain);
-            gainNode.connect(wetGain);
-            
-            dryGain.connect(masterGain);
-            wetGain.connect(reverbNode);
-
-            // Envelope (Samples already have decay, but we enforce duration)
-            const vol = parseFloat(document.getElementById('noteVol').value) * velocity;
-            gainNode.gain.setValueAtTime(0, time);
-            gainNode.gain.linearRampToValueAtTime(vol, time + 0.02); // Quick attack
-            
-            // Release
-            gainNode.gain.setValueAtTime(vol, time + duration - 0.1);
-            gainNode.gain.exponentialRampToValueAtTime(0.001, time + duration + 0.5);
-
-            source.start(time);
-            source.stop(time + duration + 1.0); // Allow tail
+            if (type === 'acoustic') playAcousticPiano(freq, start, dur, balancedVol);
+            else if (type === 'piano') playEPiano(freq, start, dur, balancedVol);
+            else playPadNote(freq, start, dur, balancedVol);
         }
 
-        /* --- DRONE (Simplified for Ambience) --- */
+        function playEPiano(freq, t, dur, maxVol) {
+            const carrier = audioCtx.createOscillator();
+            const modulator = audioCtx.createOscillator();
+            const modGain = audioCtx.createGain();
+            const mainGain = audioCtx.createGain();
+
+            carrier.type = 'sine'; carrier.frequency.value = freq;
+            modulator.type = 'sine'; modulator.frequency.value = freq * 2; 
+
+            modulator.connect(modGain); modGain.connect(carrier.frequency);
+            carrier.connect(mainGain); mainGain.connect(masterGain);
+
+            const physicsDecay = Math.min(dur, Math.max(0.2, 600 / freq));
+
+            mainGain.gain.setValueAtTime(0, t);
+            mainGain.gain.linearRampToValueAtTime(maxVol, t + 0.01);
+            mainGain.gain.exponentialRampToValueAtTime(0.01, t + physicsDecay);
+
+            modGain.gain.setValueAtTime(0, t);
+            modGain.gain.linearRampToValueAtTime(freq * 2.0, t + 0.01); 
+            modGain.gain.exponentialRampToValueAtTime(1, t + physicsDecay * 0.6);
+
+            carrier.start(t); modulator.start(t);
+            carrier.stop(t + physicsDecay + 0.1); modulator.stop(t + physicsDecay + 0.1);
+        }
+
+        function playAcousticPiano(freq, t, dur, maxVol) {
+            const osc1 = audioCtx.createOscillator(); const osc2 = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc1.type = 'triangle'; osc2.type = 'sawtooth'; 
+            osc1.frequency.value = freq; osc2.frequency.value = freq; osc2.detune.value = 3; 
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(500, t);
+            filter.frequency.linearRampToValueAtTime(4000, t + 0.01); 
+            filter.frequency.exponentialRampToValueAtTime(600, t + 0.5); 
+
+            osc1.connect(gain); osc2.connect(filter); filter.connect(gain); gain.connect(masterGain);
+
+            const physicsDecay = Math.min(dur, Math.max(0.25, 700 / freq));
+
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(maxVol, t + 0.015); 
+            gain.gain.exponentialRampToValueAtTime(0.01, t + physicsDecay);
+
+            osc1.start(t); osc2.start(t);
+            osc1.stop(t + physicsDecay + 0.1); osc2.stop(t + physicsDecay + 0.1);
+        }
+
+        function playPadNote(freq, t, dur, maxVol) {
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'sawtooth'; osc.frequency.value = freq;
+
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass'; filter.frequency.value = 600; filter.Q.value = 0;
+
+            osc.connect(filter); filter.connect(gain); gain.connect(masterGain);
+
+            gain.gain.setValueAtTime(0, t);
+            gain.gain.linearRampToValueAtTime(maxVol * 0.6, t + 0.4); 
+            gain.gain.setValueAtTime(maxVol * 0.6, t + dur - 0.4);
+            gain.gain.linearRampToValueAtTime(0, t + dur);
+
+            osc.start(t); osc.stop(t + dur + 0.1);
+        }
+
+        /* --- DRONE (Mix Fixed) --- */
         function startDrone() {
             const rootName = document.getElementById('rootKey').value;
             const rootIdx = NOTE_NAMES.indexOf(rootName.replace(/\d/, ''));
-            const freq = 440 * Math.pow(2, ((rootIdx + 36) - 69) / 12); // Low C2 range
-
-            droneGain = audioCtx.createGain();
-            droneGain.connect(masterGain);
+            const freq = getFreq(rootIdx, 3); 
+            
+            droneMasterGain = audioCtx.createGain();
+            droneMasterGain.connect(masterGain);
             updateDroneVolume(document.getElementById('droneVol').value); 
 
-            // Use 2 oscillators for a warm pad
-            const createOsc = (detune) => {
-                const osc = audioCtx.createOscillator();
-                osc.type = 'sawtooth'; // Richer harmonics
-                osc.frequency.value = freq;
-                osc.detune.value = detune;
-                
-                // Lowpass filter to make it a dark pad, not a buzz
-                const lpf = audioCtx.createBiquadFilter();
-                lpf.type = 'lowpass';
-                lpf.frequency.value = 150; // Very muffled
-                
-                osc.connect(lpf);
-                lpf.connect(droneGain);
-                osc.start();
-                droneNodes.push(osc);
+            const makeOsc = (detune, type, panVal) => {
+                const o = audioCtx.createOscillator(); o.type = type; o.frequency.value = freq; o.detune.value = detune;
+                const p = audioCtx.createStereoPanner(); p.pan.value = panVal;
+                const g = audioCtx.createGain(); g.gain.value = 0.3; 
+                o.connect(g); g.connect(p);
+                return {o, g, p};
             };
 
-            createOsc(-5);
-            createOsc(5);
-            droneNodes.push(droneGain);
-        }
+            const layers = [
+                makeOsc(0, 'sawtooth', 0), makeOsc(-8, 'sawtooth', -0.3), 
+                makeOsc(8, 'sawtooth', 0.3), makeOsc(0, 'sine', 0)         
+            ];
+            layers[3].o.frequency.value = freq / 2; 
 
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'lowpass'; filter.frequency.value = 450;
+            layers.forEach(l => l.p.connect(filter)); filter.connect(droneMasterGain);
+
+            const t = audioCtx.currentTime;
+            layers.forEach(l => { l.o.start(t); droneNodes.push(l.o); });
+            droneNodes.push(droneMasterGain); 
+        }
+        
         function updateDroneVolume(val) {
-            if(droneGain) {
-                droneGain.gain.cancelScheduledValues(audioCtx.currentTime);
-                // Drone is inherently loud, so we scale it down
-                droneGain.gain.linearRampToValueAtTime(parseFloat(val) * 0.2, audioCtx.currentTime + 0.1);
+            if(droneMasterGain) {
+                droneMasterGain.gain.cancelScheduledValues(audioCtx.currentTime);
+                // 0.6 Multiplier ensures Drone(0.6) + Note(0.6) = ~1.2 (Safe for Limiter)
+                droneMasterGain.gain.linearRampToValueAtTime(parseFloat(val) * 0.6, audioCtx.currentTime + 0.1);
             }
         }
 
         function stopDrone() {
-            if(droneGain) droneGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
+            const t = audioCtx.currentTime;
+            if(droneMasterGain) droneMasterGain.gain.exponentialRampToValueAtTime(0.001, t + 1);
             setTimeout(() => {
                 droneNodes.forEach(n => n.stop ? n.stop() : n.disconnect());
-                droneNodes = [];
-                droneGain = null;
+                droneNodes = []; droneMasterGain = null;
             }, 1100);
         }
 
-        /* --- SCHEDULER LOGIC --- */
-        
+        /* --- SCHEDULER --- */
         function performCadenceAndStart() {
-            const t = audioCtx.currentTime + 0.1;
+            const t = audioCtx.currentTime;
             const rootName = document.getElementById('rootKey').value;
             const rootIdx = NOTE_NAMES.indexOf(rootName.replace(/\d/, ''));
-            
-            // Root - Dominant - Root cadence
-            const midiRoot = rootIdx + 48; // C3 range
-            const midiDom = rootIdx + 55;  // G3
+            const instr = document.getElementById('instrument').value;
 
-            // Play chords (Root-5-Octave)
-            const playChord = (baseMidi, time) => {
-                 playSample(baseMidi, time, 2.0, 0.6);
-                 playSample(baseMidi + 7, time, 2.0, 0.5);
-                 playSample(baseMidi + 12, time, 2.0, 0.5);
-            };
+            let f1 = getFreq(rootIdx, 4); let f5 = getFreq((rootIdx + 7) % 12, 4);
+            playInstrumentNote(f1, t, 1.5, instr);
+            playInstrumentNote(f5, t + 1.5, 1.5, instr);
+            playInstrumentNote(f1, t + 3.0, 1.5, instr);
 
-            playChord(midiRoot, t);
-            playChord(midiDom, t + 1.5);
-            playChord(midiRoot, t + 3.0);
-
-            nextNoteTime = t + 4.5; 
-            runScheduler();
+            nextNoteTime = t + 4.5; runScheduler();
         }
 
         function runScheduler() {
             if(isPlaying) {
-                while(nextNoteTime < audioCtx.currentTime + 0.1) {
-                    scheduleNote();
-                }
+                while(nextNoteTime < audioCtx.currentTime + 0.1) scheduleNote();
                 schedulerTimer = setTimeout(runScheduler, 25);
             }
         }
@@ -664,21 +541,19 @@
             const rootName = document.getElementById('rootKey').value;
             const rootIdx = NOTE_NAMES.indexOf(rootName.replace(/\d/, ''));
             
-            let noteIdx = rootIdx + semitone;
-            let actualOctave = octave;
+            let noteIdx = rootIdx + semitone; let actualOctave = octave;
             if (noteIdx > 11) { noteIdx %= 12; actualOctave++; }
             
-            // Calculate MIDI
-            const midi = noteIdx + (actualOctave + 1) * 12;
-
+            const freq = getFreq(noteIdx, actualOctave);
             const dur = parseFloat(document.getElementById('noteDurInput').value);
             const gap = parseFloat(document.getElementById('noteGapInput').value);
+            const instr = document.getElementById('instrument').value;
 
-            playSample(midi, nextNoteTime, dur);
+            playInstrumentNote(freq, nextNoteTime, dur, instr);
 
-            // UI Update
             const visualTime = (nextNoteTime - audioCtx.currentTime) * 1000;
             const solfegeInfo = SOLFEGE_MAP[semitone];
+
             setTimeout(() => {
                 if(!isPlaying) return;
                 document.getElementById('currentNoteDisplay').style.opacity = 1;
@@ -688,18 +563,9 @@
             nextNoteTime += (dur + gap);
         }
 
-        /* --- INITIALIZATION HANDLER --- */
         btnToggle.addEventListener('click', () => {
-            if(!samplesLoaded) {
-                // First click: Initialize Audio Context and Load
-                initAudioAndLoad();
-                return;
-            }
-
             if (isPlaying) {
-                isPlaying = false;
-                clearTimeout(schedulerTimer);
-                stopDrone();
+                isPlaying = false; clearTimeout(schedulerTimer); stopDrone();
                 btnToggle.innerText = "Start Training";
                 btnToggle.classList.replace('bg-red-500', 'bg-amber-500');
                 btnToggle.classList.replace('hover:bg-red-400', 'hover:bg-amber-400');
@@ -707,11 +573,7 @@
                 document.getElementById('currentNoteDisplay').style.opacity = 0;
             } else {
                 if(activeDegrees.size === 0) return alert("Select at least one degree!");
-                if(audioCtx.state === 'suspended') audioCtx.resume();
-                
-                isPlaying = true;
-                startDrone();
-                performCadenceAndStart();
+                initAudio(); isPlaying = true; startDrone(); performCadenceAndStart();
                 btnToggle.innerText = "Stop Session";
                 btnToggle.classList.replace('bg-amber-500', 'bg-red-500');
                 btnToggle.classList.replace('hover:bg-amber-400', 'hover:bg-red-400');
