@@ -19,6 +19,7 @@
             justify-content: center;
             padding: 1rem;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         input[type=range] {
@@ -173,6 +174,14 @@
                         <input type="range" id="noteVol" min="0" max="1" step="0.01" value="0.8" oninput="document.getElementById('nv-val').innerText = Math.round(this.value*100)+'%'">
                     </div>
                 </div>
+                
+                <div>
+                    <div class="flex justify-between mb-1 items-center">
+                        <label class="text-amber-500 font-bold">Answer Delay (s)</label>
+                        <input type="number" id="answerDelayInput" value="0.0" step="0.1" min="0">
+                    </div>
+                    <input type="range" id="answerDelay" min="0" max="2" step="0.1" value="0.0">
+                </div>
             </div>
 
             <div class="control-group flex flex-col justify-between">
@@ -227,6 +236,7 @@
             <button id="toggleBtn" class="w-full md:w-64 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold text-sm uppercase tracking-widest transition-colors rounded-sm shadow-[0_0_15px_rgba(255,158,11,0.15)]">
                 Start Training
             </button>
+            <div class="text-[10px] text-zinc-600">iOS: Turn "Silent Mode" switch OFF</div>
             
             <div id="currentNoteDisplay" class="flex flex-col items-center opacity-0 transition-opacity duration-500 h-12 justify-center">
                 <div class="flex items-center gap-2 mb-1">
@@ -310,7 +320,10 @@
                 const s = document.getElementById(sliderId); const i = document.getElementById(inputId);
                 s.oninput = (e) => i.value = e.target.value; i.onchange = (e) => s.value = e.target.value;
             };
-            bind('noteDuration', 'noteDurInput'); bind('noteGap', 'noteGapInput');
+            bind('noteDuration', 'noteDurInput'); 
+            bind('noteGap', 'noteGapInput');
+            bind('answerDelay', 'answerDelayInput'); // Added binding for Answer Delay
+            
             document.getElementById('octaveMin').oninput = validateOctave;
             document.getElementById('octaveMax').oninput = validateOctave;
         }
@@ -356,7 +369,21 @@
                 masterGain.connect(compressor);
                 compressor.connect(audioCtx.destination);
             }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        // iOS Specific: Play a silent buffer to unlock the audio engine
+        function unlockAudio() {
+            if (!audioCtx) return;
+            const buffer = audioCtx.createBuffer(1, 1, 22050);
+            const source = audioCtx.createBufferSource();
+            source.buffer = buffer;
+            source.connect(audioCtx.destination);
+            if (source.start) source.start(0);
+            else source.noteOn(0);
+
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
         }
 
         function getFreq(noteIndex, octave) {
@@ -374,7 +401,7 @@
             // Mids
             if (freq < 800) return 1.0;
             
-            // Highs - Increased from 0.15 to 0.35/0.6 to make them audible
+            // Highs 
             if (freq < 1500) return 0.6; 
             return 0.35; 
         }
@@ -547,18 +574,28 @@
             const freq = getFreq(noteIdx, actualOctave);
             const dur = parseFloat(document.getElementById('noteDurInput').value);
             const gap = parseFloat(document.getElementById('noteGapInput').value);
+            const delay = parseFloat(document.getElementById('answerDelayInput').value); // Get user delay
             const instr = document.getElementById('instrument').value;
 
             playInstrumentNote(freq, nextNoteTime, dur, instr);
 
-            const visualTime = (nextNoteTime - audioCtx.currentTime) * 1000;
+            // Time difference between NOW and when the note STARTS playing
+            const timeUntilNoteStarts = nextNoteTime - audioCtx.currentTime;
+            
+            // Add user's delay preference to that time
+            const visualDelay = (timeUntilNoteStarts + delay) * 1000;
             const solfegeInfo = SOLFEGE_MAP[semitone];
+
+            // Reset display immediately (hide old note) if delay > 0
+            if (delay > 0.1) {
+                document.getElementById('currentNoteDisplay').style.opacity = 0;
+            }
 
             setTimeout(() => {
                 if(!isPlaying) return;
                 document.getElementById('currentNoteDisplay').style.opacity = 1;
                 document.getElementById('noteName').innerText = `${solfegeInfo.num} (${solfegeInfo.sol})`;
-            }, visualTime);
+            }, Math.max(0, visualDelay)); // Ensure no negative delay
 
             nextNoteTime += (dur + gap);
         }
@@ -573,7 +610,12 @@
                 document.getElementById('currentNoteDisplay').style.opacity = 0;
             } else {
                 if(activeDegrees.size === 0) return alert("Select at least one degree!");
-                initAudio(); isPlaying = true; startDrone(); performCadenceAndStart();
+                
+                // Initialize and Unlock for iOS
+                initAudio(); 
+                unlockAudio();
+
+                isPlaying = true; startDrone(); performCadenceAndStart();
                 btnToggle.innerText = "Stop Session";
                 btnToggle.classList.replace('bg-amber-500', 'bg-red-500');
                 btnToggle.classList.replace('hover:bg-amber-400', 'hover:bg-red-400');
